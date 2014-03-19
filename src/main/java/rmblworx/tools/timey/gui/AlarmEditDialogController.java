@@ -10,7 +10,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import jfxtras.labs.scene.control.CalendarTextField;
+import jfxtras.scene.control.CalendarTextField;
 import rmblworx.tools.timey.gui.component.TimePicker;
 import rmblworx.tools.timey.gui.config.ConfigManager;
 
@@ -91,7 +91,7 @@ public class AlarmEditDialogController {
 		this.alarm = alarm;
 
 		alarmEnabledCheckbox.setSelected(alarm.isEnabled());
-		alarmDatePicker.setValue(DateTimeUtil.getDatePart(alarm.getDateTime()));
+		alarmDatePicker.setCalendar(DateTimeUtil.getDatePart(alarm.getDateTime()));
 		alarmTimePicker.setTime(DateTimeUtil.getTimePart(alarm.getDateTime()));
 		alarmDescriptionTextField.setText(alarm.getDescription());
 	}
@@ -113,8 +113,8 @@ public class AlarmEditDialogController {
 				if (isInputValid()) {
 					alarm.setEnabled(alarmEnabledCheckbox.isSelected());
 
-					final Calendar dateTime = (Calendar) alarmDatePicker.getValue().clone();
-					dateTime.setTimeInMillis(DateTimeUtil.getDatePart(alarmDatePicker.getValue()).getTimeInMillis()
+					final Calendar dateTime = (Calendar) alarmDatePicker.getCalendar().clone();
+					dateTime.setTimeInMillis(DateTimeUtil.getDatePart(alarmDatePicker.getCalendar()).getTimeInMillis()
 							+ dateTime.getTimeZone().getDSTSavings()
 							+ DateTimeUtil.getTimePart(alarmTimePicker.getTime()).getTimeInMillis());
 					alarm.setDateTime(dateTime);
@@ -151,7 +151,7 @@ public class AlarmEditDialogController {
 	private boolean isInputValid() {
 		final StringBuilder errors = new StringBuilder();
 
-		if (alarmDatePicker.getValue() == null) {
+		if (alarmDatePicker.getCalendar() == null) {
 			errors.append(resources.getString("alarmEdit.date.empty"));
 			errors.append("\n");
 		}

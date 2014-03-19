@@ -3,8 +3,8 @@
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import jfxtras.labs.scene.control.*?>
-<?import jfxtras.labs.scene.control.CalendarTextField?>
+<?import jfxtras.scene.control.*?>
+<?import jfxtras.scene.control.CalendarTextField?>
 <?import rmblworx.tools.timey.gui.component.*?>
 <?import rmblworx.tools.timey.gui.component.TimePicker?>
 <?scenebuilder-classpath-element ../../../../../../../target/classes?>

@@ -11,7 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
-import jfxtras.labs.scene.control.CalendarTextField;
+import jfxtras.scene.control.CalendarTextField;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class AlarmEditDialogControllerTest extends FxmlGuiTest {
 
 		// sicherstellen, dass Formularfelder korrekt gefüllt sind
 		assertTrue(alarmEnabledCheckbox.isSelected());
-		assertEquals(DateTimeUtil.getCalendarForString("24.12.2014").getTime(), alarmDatePicker.getValue().getTime());
+		assertEquals(DateTimeUtil.getCalendarForString("24.12.2014").getTime(), alarmDatePicker.getCalendar().getTime());
 		assertEquals(DateTimeUtil.getCalendarForString("12:00:00").getTime(), alarmTimePicker.getTime().getTime());
 		assertEquals("Test", alarmDescriptionTextField.getText());
 	}
@@ -91,7 +91,7 @@ public class AlarmEditDialogControllerTest extends FxmlGuiTest {
 		alarmEnabledCheckbox.fire();
 
 		// Datum setzen
-		alarmDatePicker.setValue(DateTimeUtil.getCalendarForString("24.12.2014"));
+		alarmDatePicker.setCalendar(DateTimeUtil.getCalendarForString("24.12.2014"));
 
 		// Zeit setzen
 		alarmTimePicker.setTime(DateTimeUtil.getCalendarForString("12:00:00"));
@@ -144,7 +144,7 @@ public class AlarmEditDialogControllerTest extends FxmlGuiTest {
 		alarmEnabledCheckbox.fire();
 
 		// Datum setzen
-		alarmDatePicker.setValue(DateTimeUtil.getCalendarForString("24.12.2014"));
+		alarmDatePicker.setCalendar(DateTimeUtil.getCalendarForString("24.12.2014"));
 
 		// Zeit setzen
 		alarmTimePicker.setTime(DateTimeUtil.getCalendarForString("12:00:00"));

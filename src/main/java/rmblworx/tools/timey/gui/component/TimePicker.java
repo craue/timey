@@ -194,10 +194,10 @@ public class TimePicker extends AnchorPane {
 			public void changed(final ObservableValue<? extends String> property, final String oldValue, final String newValue) {
 				// Wert auf gültigen Bereich beschränken
 				try {
-					final long value = Long.parseLong(newValue);
-					if (value < MIN_VALUE) {
+					final long parsedNumber = Long.parseLong(newValue);
+					if (parsedNumber < MIN_VALUE) {
 						textProperty.setValue(getTwoDigitValue(MIN_VALUE));
-					} else if (value > maxValue) {
+					} else if (parsedNumber > maxValue) {
 						textProperty.setValue(getTwoDigitValue(maxValue));
 					} else {
 						textProperty.setValue(newValue);
@@ -216,7 +216,14 @@ public class TimePicker extends AnchorPane {
 		textField.focusedProperty().addListener(new ChangeListener<Boolean>() {
 			public void changed(final ObservableValue<? extends Boolean> property, final Boolean oldValue, final Boolean newValue) {
 				if (Boolean.FALSE.equals(newValue)) {
-					textProperty.setValue(getTwoDigitValue(Long.parseLong(textProperty.get())));
+					long parsedNumber = 0;
+					try {
+						parsedNumber = Long.parseLong(textProperty.get());
+					} catch (final NumberFormatException e) {
+						// ignorieren
+					} finally {
+						textProperty.setValue(getTwoDigitValue(parsedNumber));
+					}
 				}
 			}
 		});

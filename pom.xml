@@ -17,7 +17,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-clean-plugin.version>2.4.1</maven-clean-plugin.version>
 		<junit.version>4.11</junit.version>
-		<javafx.version>2.2</javafx.version>
+		<javafx.version>8.0</javafx.version>
 		<spring.version>4.0.0.RELEASE</spring.version>
 		<slf4j.version>1.7.6</slf4j.version>
 		<apache.commons.lang.version>2.6</apache.commons.lang.version>
@@ -103,13 +103,13 @@
 			<groupId>com.oracle</groupId>
 			<artifactId>javafx</artifactId>
 			<version>${javafx.version}</version>
-			<systemPath>${java.home}/lib/jfxrt.jar</systemPath>
+			<systemPath>${java.home}/lib/ext/jfxrt.jar</systemPath>
 			<scope>system</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jfxtras</groupId>
-			<artifactId>jfxtras-labs</artifactId>
-			<version>2.2-r5</version>
+			<artifactId>jfxtras-controls</artifactId>
+			<version>8.0-r1</version>
 		</dependency>
 		<!-- Testing -->
 		<dependency>
@@ -146,8 +146,8 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 				<plugin>
