@@ -1,7 +1,19 @@
 language: java
 
 jdk:
-  - oraclejdk7
+#  - oraclejdk7
+  - oraclejdk8
+
+#env:
+#  - JAVAFX_VERSION="2.2"
+#  - JAVAFX_VERSION="8.0"
+
+#matrix:
+#  include:
+#    - jdk: oraclejdk7
+#      env: JAVAFX_VERSION="2.2"
+#    - jdk: oraclejdk8
+#      env: JAVAFX_VERSION="8.0"
 
 # http://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-GUI-(e.g.-a-Web-browser)
 before_install:
