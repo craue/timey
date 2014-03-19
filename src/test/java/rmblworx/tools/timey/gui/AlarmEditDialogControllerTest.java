@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -15,6 +16,7 @@ import jfxtras.labs.scene.control.CalendarTextField;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.loadui.testfx.utils.FXTestUtils;
 
 import rmblworx.tools.timey.gui.component.TimePicker;
 
@@ -57,7 +59,12 @@ public class AlarmEditDialogControllerTest extends FxmlGuiTest {
 
 		// Alarm anlegen
 		final Alarm alarm = new Alarm(DateTimeUtil.getCalendarForString("24.12.2014 12:00:00"), "Test");
-		controller.setAlarm(alarm);
+		Platform.runLater(new Runnable() {
+			public void run() {
+				controller.setAlarm(alarm);
+			}
+		});
+		FXTestUtils.awaitEvents();
 
 		// sicherstellen, dass Formularfelder korrekt gefüllt sind
 		assertTrue(alarmEnabledCheckbox.isSelected());
@@ -85,23 +92,43 @@ public class AlarmEditDialogControllerTest extends FxmlGuiTest {
 
 		// Alarm anlegen
 		final Alarm alarm = new Alarm(DateTimeUtil.getCalendarForString("01.01.1970"), "Bla");
-		controller.setAlarm(alarm);
+		Platform.runLater(new Runnable() {
+			public void run() {
+				controller.setAlarm(alarm);
+			}
+		});
+		FXTestUtils.awaitEvents();
 
 		// deaktivieren
-		alarmEnabledCheckbox.fire();
+		Platform.runLater(new Runnable() {
+			public void run() {
+				alarmEnabledCheckbox.fire();
+			}
+		});
+		FXTestUtils.awaitEvents();
 
-		// Datum setzen
-		alarmDatePicker.setValue(DateTimeUtil.getCalendarForString("24.12.2014"));
+		Platform.runLater(new Runnable() {
+			public void run() {
+				// Datum setzen
+				alarmDatePicker.setValue(DateTimeUtil.getCalendarForString("24.12.2014"));
 
-		// Zeit setzen
-		alarmTimePicker.setTime(DateTimeUtil.getCalendarForString("12:00:00"));
+				// Zeit setzen
+				alarmTimePicker.setTime(DateTimeUtil.getCalendarForString("12:00:00"));
 
-		// Beschreibung setzen
-		alarmDescriptionTextField.setText("Test");
+				// Beschreibung setzen
+				alarmDescriptionTextField.setText("Test");
+			}
+		});
+		FXTestUtils.awaitEvents();
 
 		// Speichern-Schaltfläche betätigen
 		final Button alarmSaveButton = (Button) scene.lookup("#alarmSaveButton");
-		alarmSaveButton.fire();
+		Platform.runLater(new Runnable() {
+			public void run() {
+				alarmSaveButton.fire();
+			}
+		});
+		FXTestUtils.awaitEvents();
 
 		// TODO auf Schließen des Dialogs warten
 		sleep(50); // TODO anders lösen
@@ -138,23 +165,43 @@ public class AlarmEditDialogControllerTest extends FxmlGuiTest {
 		final Calendar dateTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		dateTime.clear();
 		final Alarm alarm = new Alarm(dateTime, "bla");
-		controller.setAlarm(alarm);
+		Platform.runLater(new Runnable() {
+			public void run() {
+				controller.setAlarm(alarm);
+			}
+		});
+		FXTestUtils.awaitEvents();
 
 		// deaktivieren
-		alarmEnabledCheckbox.fire();
+		Platform.runLater(new Runnable() {
+			public void run() {
+				alarmEnabledCheckbox.fire();
+			}
+		});
+		FXTestUtils.awaitEvents();
 
-		// Datum setzen
-		alarmDatePicker.setValue(DateTimeUtil.getCalendarForString("24.12.2014"));
+		Platform.runLater(new Runnable() {
+			public void run() {
+				// Datum setzen
+				alarmDatePicker.setValue(DateTimeUtil.getCalendarForString("24.12.2014"));
 
-		// Zeit setzen
-		alarmTimePicker.setTime(DateTimeUtil.getCalendarForString("12:00:00"));
+				// Zeit setzen
+				alarmTimePicker.setTime(DateTimeUtil.getCalendarForString("12:00:00"));
 
-		// Beschreibung setzen
-		alarmDescriptionTextField.setText("Test");
+				// Beschreibung setzen
+				alarmDescriptionTextField.setText("Test");
+			}
+		});
+		FXTestUtils.awaitEvents();
 
 		// Abbrechen-Schaltfläche betätigen
 		final Button alarmCancelButton = (Button) scene.lookup("#alarmCancelButton");
-		alarmCancelButton.fire();
+		Platform.runLater(new Runnable() {
+			public void run() {
+				alarmCancelButton.fire();
+			}
+		});
+		FXTestUtils.awaitEvents();
 
 		// TODO auf Schließen des Dialogs warten
 		sleep(50); // TODO anders lösen

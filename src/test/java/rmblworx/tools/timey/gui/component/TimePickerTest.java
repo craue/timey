@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Vector;
 
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Slider;
@@ -16,6 +17,7 @@ import javafx.scene.input.KeyCode;
 import org.junit.Before;
 import org.junit.Test;
 import org.loadui.testfx.GuiTest;
+import org.loadui.testfx.utils.FXTestUtils;
 
 import rmblworx.tools.timey.gui.DateTimeUtil;
 
@@ -94,7 +96,12 @@ public class TimePickerTest extends GuiTest {
 
 		// Wert des Sliders setzen und sicherstellen, dass Textfeld-Inhalt der Erwartung entspricht
 		for (final TextFieldAndSliderValue testCase : testCases) {
-			testCase.slider.setValue(testCase.sliderValue);
+			Platform.runLater(new Runnable() {
+				public void run() {
+					testCase.slider.setValue(testCase.sliderValue);
+				}
+			});
+			FXTestUtils.awaitEvents();
 			try {
 				waitUntil(testCase.textField, new Predicate<TextField>() {
 					public boolean apply(final TextField textField) {
@@ -109,7 +116,12 @@ public class TimePickerTest extends GuiTest {
 
 		// Inhalt des Textfelds setzen und sicherstellen, dass Slider-Wert der Erwartung entspricht
 		for (final TextFieldAndSliderValue testCase : testCases) {
-			testCase.textField.setText(testCase.textFieldValue);
+			Platform.runLater(new Runnable() {
+				public void run() {
+					testCase.textField.setText(testCase.textFieldValue);
+				}
+			});
+			FXTestUtils.awaitEvents();
 			try {
 				waitUntil(testCase.slider, new Predicate<Slider>() {
 					public boolean apply(final Slider slider) {
@@ -157,13 +169,23 @@ public class TimePickerTest extends GuiTest {
 		for (final InputMode inputMode : inputModes) {
 			// Inhalt des Textfelds setzen und sicherstellen, dass Inhalt der Erwartung entspricht
 			for (final TextFieldInputAndValue testCase : testCases) {
-				testCase.textField.requestFocus(); // Feld fokussieren
+				Platform.runLater(new Runnable() {
+					public void run() {
+						testCase.textField.requestFocus(); // Feld fokussieren
+					}
+				});
+				FXTestUtils.awaitEvents();
 				switch (inputMode) {
 					case TYPE:
 						type(testCase.input);
 						break;
 					case COPY_PASTE:
-						testCase.textField.setText(testCase.input);
+						Platform.runLater(new Runnable() {
+							public void run() {
+								testCase.textField.setText(testCase.input);
+							}
+						});
+						FXTestUtils.awaitEvents();
 						break;
 					default:
 						fail("unbekannter Modus");
@@ -180,7 +202,12 @@ public class TimePickerTest extends GuiTest {
 							inputMode.toString().toLowerCase(), testCase.textField.getText(), testCase.value));
 				} finally {
 					// Feldinhalt auf Ausgangswert zurücksetzen
-					testCase.textField.setText("00");
+					Platform.runLater(new Runnable() {
+						public void run() {
+							testCase.textField.setText("00");
+						}
+					});
+					FXTestUtils.awaitEvents();
 				}
 			}
 		}
@@ -203,7 +230,12 @@ public class TimePickerTest extends GuiTest {
 
 		for (final TimePartsAndTimeValue testCase : testCases) {
 			final Calendar time = DateTimeUtil.getCalendarForString(testCase.timeString);
-			timePicker.setTime(time);
+			Platform.runLater(new Runnable() {
+				public void run() {
+					timePicker.setTime(time);
+				}
+			});
+			FXTestUtils.awaitEvents();
 			assertEquals(testCase.hours, hoursTextField.getText());
 			assertEquals(testCase.minutes, minutesTextField.getText());
 			assertEquals(testCase.seconds, secondsTextField.getText());
@@ -228,9 +260,14 @@ public class TimePickerTest extends GuiTest {
 
 		for (final TimePartsAndTimeValue testCase : testCases) {
 			final Calendar time = DateTimeUtil.getCalendarForString(testCase.timeString);
-			hoursTextField.setText(testCase.hours);
-			minutesTextField.setText(testCase.minutes);
-			secondsTextField.setText(testCase.seconds);
+			Platform.runLater(new Runnable() {
+				public void run() {
+					hoursTextField.setText(testCase.hours);
+					minutesTextField.setText(testCase.minutes);
+					secondsTextField.setText(testCase.seconds);
+				}
+			});
+			FXTestUtils.awaitEvents();
 			assertEquals(time.getTimeInMillis(), timePicker.getTime().getTimeInMillis());
 			assertEquals(time.getTimeInMillis(), timePicker.getTimeProperty().get().getTimeInMillis());
 		}

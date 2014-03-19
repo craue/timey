@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Calendar;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,6 +17,7 @@ import javafx.scene.control.TableView;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.loadui.testfx.utils.FXTestUtils;
 
 import com.google.common.base.Predicate;
 
@@ -70,7 +72,12 @@ public class AlarmControllerTest extends FxmlGuiTest {
 		assertTrue(alarmDeleteButton.isDisabled());
 
 		// zweiten Alarm auswählen
-		alarmTable.getSelectionModel().select(alarm2);
+		Platform.runLater(new Runnable() {
+			public void run() {
+				alarmTable.getSelectionModel().select(alarm2);
+			}
+		});
+		FXTestUtils.awaitEvents();
 
 		// Zustand der Schaltflächen testen
 		assertTrue(alarmDeleteButton.isVisible());
