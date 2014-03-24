@@ -141,13 +141,15 @@
 
 	<profiles>
 		<profile>
-			<id>all-tests</id>
+			<id>travis-tests</id>
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration combine.self="override" />
+						<configuration combine.self="override">
+							<argLine>-Xmx512m -XX:MaxPermSize=256m</argLine>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>
