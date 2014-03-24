@@ -8,9 +8,8 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
-env:
-  - JVM_OPTS="" MAVEN_OPTS=""
-  - JVM_OPTS="-Xmx512m -XX:MaxPermSize=256m" MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=256m"
+#env:
+#  - JVM_OPTS="-Xmx512m -XX:MaxPermSize=256m" MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=256m"
 
 #before_script:
 #  - "export JAVA_OPTS=\"-Xmx512m -XX:MaxPermSize=256m\""

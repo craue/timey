@@ -31,13 +31,13 @@ public class JarVersionDetectorTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		try {
-			TestHelper.executeMavenPackageWithoutRunningTestsProcess();
-			jarBuilt = true;
-		} catch (final IOException e) {
-			LOG.error(e.getLocalizedMessage());
-			return;
-		}
+//		try {
+//			TestHelper.executeMavenPackageWithoutRunningTestsProcess();
+//			jarBuilt = true;
+//		} catch (final IOException e) {
+//			LOG.error(e.getLocalizedMessage());
+//			return;
+//		}
 	}
 
 	/**
