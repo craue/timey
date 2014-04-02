@@ -1,21 +1,26 @@
 package rmblworx.tools.timey.gui;
 
+import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import javafx.scene.Scene;
+
+import java.awt.event.KeyEvent;
+import java.util.concurrent.TimeoutException;
+
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.loadui.testfx.utils.FXTestUtils;
 
 import rmblworx.tools.timey.gui.component.TimePicker;
+
+import com.athaydes.automaton.FXer;
+import com.google.code.tempusfugit.temporal.Condition;
 
 /**
  * GUI-Tests für den Countdown.
@@ -28,9 +33,9 @@ import rmblworx.tools.timey.gui.component.TimePicker;
 public class CountdownControllerTest extends FxmlGuiControllerTest {
 
 	/**
-	 * Container für Elemente.
+	 * Test-Client.
 	 */
-	private Scene scene;
+	private FXer fxer;
 
 	/**
 	 * {@inheritDoc}
@@ -41,7 +46,7 @@ public class CountdownControllerTest extends FxmlGuiControllerTest {
 
 	@Before
 	public final void setUp() {
-		scene = stage.getScene();
+		fxer = getClient();
 	}
 
 	/**
@@ -49,14 +54,13 @@ public class CountdownControllerTest extends FxmlGuiControllerTest {
 	 */
 	@Test
 	public final void testStartStopButtonStates() {
-		final Button countdownStartButton = (Button) scene.lookup("#countdownStartButton");
-		final Button countdownStopButton = (Button) scene.lookup("#countdownStopButton");
-		final TimePicker countdownTimePicker = (TimePicker) scene.lookup("#countdownTimePicker");
+		final Button countdownStartButton = (Button) fxer.getAt("#countdownStartButton");
+		final Button countdownStopButton = (Button) fxer.getAt("#countdownStopButton");
+		final TimePicker countdownTimePicker = (TimePicker) fxer.getAt("#countdownTimePicker");
 
 		// Zustand der Schaltflächen testen
 		assertTrue(countdownStartButton.isVisible());
 		assertTrue(countdownStartButton.isDisabled());
-//		assertTrue(countdownStartButton.isFocused()); // muss nicht unbedingt der Fall sein
 
 		assertFalse(countdownStopButton.isVisible());
 		assertFalse(countdownStopButton.isDisabled());
@@ -70,7 +74,7 @@ public class CountdownControllerTest extends FxmlGuiControllerTest {
 
 		// Countdown starten
 		countdownStartButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).startCountdown();
 
 		// Zustand der Schaltflächen testen
@@ -83,7 +87,7 @@ public class CountdownControllerTest extends FxmlGuiControllerTest {
 
 		// Countdown stoppen
 		countdownStopButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).stopCountdown();
 
 		// Zustand der Schaltflächen testen
@@ -106,18 +110,18 @@ public class CountdownControllerTest extends FxmlGuiControllerTest {
 	 * Testet die Übertragung der Zeit zwischen TimePicker und Label.
 	 */
 	@Test
-	public final void testTimeConversionBetweenPickerAndLabel() {
-		final Button countdownStartButton = (Button) scene.lookup("#countdownStartButton");
-		final Button countdownStopButton = (Button) scene.lookup("#countdownStopButton");
-		final TimePicker countdownTimePicker = (TimePicker) scene.lookup("#countdownTimePicker");
-		final Label countdownTimeLabel = (Label) scene.lookup("#countdownTimeLabel");
+	public final void testTimeConversionBetweenPickerAndLabel() throws InterruptedException, TimeoutException {
+		final Button countdownStartButton = (Button) fxer.getAt("#countdownStartButton");
+		final Button countdownStopButton = (Button) fxer.getAt("#countdownStopButton");
+		final TimePicker countdownTimePicker = (TimePicker) fxer.getAt("#countdownTimePicker");
+		final Label countdownTimeLabel = (Label) fxer.getAt("#countdownTimeLabel");
 
 		// Zeit setzen
 		countdownTimePicker.setTime(DateTimeUtil.getCalendarForString("00:00:10"));
 
 		// Countdown starten
 		countdownStartButton.fire();
-		FXTestUtils.awaitEvents();
+		awaitEvents();
 
 		// verbleibende Zeit muss angezeigt sein
 		assertEquals("00:00:10", countdownTimeLabel.getText());
@@ -127,7 +131,7 @@ public class CountdownControllerTest extends FxmlGuiControllerTest {
 
 		// Countdown stoppen
 		countdownStopButton.fire();
-		FXTestUtils.awaitEvents();
+		awaitEvents();
 
 		// verbleibende Zeit muss stimmen
 		assertEquals(10000, countdownTimePicker.getTime().getTimeInMillis());
@@ -140,22 +144,39 @@ public class CountdownControllerTest extends FxmlGuiControllerTest {
 	 * Testet Starten und Stoppen per Tastatur unter Berücksichtigung der korrekten Fokussierung.
 	 */
 	@Test
-	public final void testStartStopPerKeyboard() {
-		final TimePicker countdownTimePicker = (TimePicker) scene.lookup("#countdownTimePicker");
+	public final void testStartStopPerKeyboard() throws InterruptedException, TimeoutException {
+		final Button countdownStartButton = (Button) fxer.getAt("#countdownStartButton");
+		final Button countdownStopButton = (Button) fxer.getAt("#countdownStopButton");
+		final TimePicker countdownTimePicker = (TimePicker) fxer.getAt("#countdownTimePicker");
+
+		// Zeit auf 0 setzen
+		countdownTimePicker.setTime(DateTimeUtil.getCalendarForString("00:00:00"));
+		fxer.waitForFxEvents();
 
 		// bei Zeit = 0 darf sich Countdown nicht starten lassen
-		type(KeyCode.ENTER);
+		fxer.type(KeyEvent.VK_ENTER).waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade(), never()).startCountdown();
 
 		// Zeit setzen
 		countdownTimePicker.setTime(DateTimeUtil.getCalendarForString("00:00:10"));
+		awaitEvents();
 
 		// Countdown starten
-		type(KeyCode.ENTER);
+		fxer.type(KeyEvent.VK_ENTER);
+		waitOrTimeout(new Condition() {
+			public boolean isSatisfied() {
+				return countdownStopButton.isVisible();
+			}
+		}, TIMEOUT);
 		verify(getController().getGuiHelper().getFacade()).startCountdown();
 
 		// Countdown stoppen
-		type(KeyCode.ENTER);
+		fxer.type(KeyEvent.VK_ENTER);
+		waitOrTimeout(new Condition() {
+			public boolean isSatisfied() {
+				return countdownStartButton.isVisible();
+			}
+		}, TIMEOUT);
 		verify(getController().getGuiHelper().getFacade()).stopCountdown();
 	}
 

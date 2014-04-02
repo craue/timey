@@ -3,34 +3,20 @@ package rmblworx.tools.timey.gui;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-
-import org.loadui.testfx.GuiTest;
-
 import rmblworx.tools.timey.ITimey;
 
 /**
- * Basisklasse für FXML-basierte GUI-Tests mit {@link https://github.com/SmartBear/TestFX}.
+ * Basisklasse für FXML-basierte GUI-Tests mit {@link https://github.com/renatoathaydes/Automaton}.
  * 
  * @author Christian Raue <christian.raue@gmail.com>
  * @copyright 2014 Christian Raue
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 public abstract class FxmlGuiTest extends GuiTest {
-
-	/**
-	 * Sprache für GUI-Tests.
-	 */
-	public static final Locale TEST_LOCALE = Locale.GERMAN;
-
-	static {
-		// Standardsprache für alle GUI-Tests setzen (wichtig z. B. als Fallback auf Travis)
-		Locale.setDefault(TEST_LOCALE);
-	}
 
 	/**
 	 * Mit der GUI verbundener Controller.

@@ -1,11 +1,16 @@
 package rmblworx.tools.timey.gui;
 
+import static com.athaydes.automaton.assertion.AutomatonMatcher.hasText;
+import static com.google.code.tempusfugit.temporal.WaitFor.waitOrTimeout;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import javafx.scene.Scene;
+
+import java.util.concurrent.TimeoutException;
+
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -13,9 +18,11 @@ import javafx.scene.control.Label;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.loadui.testfx.utils.FXTestUtils;
 
 import rmblworx.tools.timey.vo.TimeDescriptor;
+
+import com.athaydes.automaton.FXer;
+import com.google.code.tempusfugit.temporal.Condition;
 
 /**
  * GUI-Tests für die Stoppuhr.
@@ -28,9 +35,9 @@ import rmblworx.tools.timey.vo.TimeDescriptor;
 public class StopwatchControllerTest extends FxmlGuiControllerTest {
 
 	/**
-	 * Container für Elemente.
+	 * Test-Client.
 	 */
-	private Scene scene;
+	private FXer fxer;
 
 	/**
 	 * {@inheritDoc}
@@ -41,7 +48,7 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 
 	@Before
 	public final void setUp() {
-		scene = stage.getScene();
+		fxer = getClient();
 	}
 
 	/**
@@ -49,14 +56,13 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 	 */
 	@Test
 	public final void testStopwatchStartStopResetButtonStates() {
-		final Button stopwatchStartButton = (Button) scene.lookup("#stopwatchStartButton");
-		final Button stopwatchStopButton = (Button) scene.lookup("#stopwatchStopButton");
-		final Button stopwatchResetButton = (Button) scene.lookup("#stopwatchResetButton");
+		final Button stopwatchStartButton = (Button) fxer.getAt("#stopwatchStartButton");
+		final Button stopwatchStopButton = (Button) fxer.getAt("#stopwatchStopButton");
+		final Button stopwatchResetButton = (Button) fxer.getAt("#stopwatchResetButton");
 
 		// Zustand der Schaltflächen testen
 		assertTrue(stopwatchStartButton.isVisible());
 		assertFalse(stopwatchStartButton.isDisabled());
-//		assertTrue(stopwatchStartButton.isFocused()); // muss nicht unbedingt der Fall sein
 
 		assertFalse(stopwatchStopButton.isVisible());
 		assertFalse(stopwatchStopButton.isDisabled());
@@ -66,7 +72,7 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 
 		// Stoppuhr starten
 		stopwatchStartButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).startStopwatch();
 
 		// Zustand der Schaltflächen testen
@@ -82,7 +88,7 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 
 		// Stoppuhr stoppen
 		stopwatchStopButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).stopStopwatch();
 
 		// Zustand der Schaltflächen testen
@@ -98,7 +104,7 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 
 		// Stoppuhr zurücksetzen
 		stopwatchResetButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).resetStopwatch();
 
 		// Zustand der Schaltflächen testen
@@ -117,9 +123,9 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 	 * Testet die Darstellung der Zeit mit und ohne Millisekunden-Anteil.
 	 */
 	@Test
-	public final void testStopwatchTimeLabelMilliseconds() {
-		final CheckBox stopwatchShowMillisecondsCheckbox = (CheckBox) scene.lookup("#stopwatchShowMillisecondsCheckbox");
-		final Label stopwatchTimeLabel = (Label) scene.lookup("#stopwatchTimeLabel");
+	public final void testStopwatchTimeLabelMilliseconds() throws InterruptedException, TimeoutException {
+		final CheckBox stopwatchShowMillisecondsCheckbox = (CheckBox) fxer.getAt("#stopwatchShowMillisecondsCheckbox");
+		final Label stopwatchTimeLabel = (Label) fxer.getAt("#stopwatchTimeLabel");
 
 		// Ausgangszustand
 		assertTrue(stopwatchShowMillisecondsCheckbox.isSelected());
@@ -127,12 +133,12 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 
 		// Millisekunden-Anteil ausblenden
 		stopwatchShowMillisecondsCheckbox.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		assertEquals("00:00:00", stopwatchTimeLabel.getText());
 
-		// Millisekunden-Anteil wieder ausblenden
+		// Millisekunden-Anteil wieder einblenden
 		stopwatchShowMillisecondsCheckbox.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		assertEquals("00:00:00.000", stopwatchTimeLabel.getText());
 	}
 
@@ -140,31 +146,37 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 	 * Testet die Anzeige der gemessenen Zeit.
 	 */
 	@Test
-	public final void testStopwatchStartStopTimeMeasured() {
-		final Button stopwatchStartButton = (Button) scene.lookup("#stopwatchStartButton");
-		final Button stopwatchStopButton = (Button) scene.lookup("#stopwatchStopButton");
-		final Label stopwatchTimeLabel = (Label) scene.lookup("#stopwatchTimeLabel");
+	public final void testStopwatchStartStopTimeMeasured() throws InterruptedException, TimeoutException {
+		final Button stopwatchStartButton = (Button) fxer.getAt("#stopwatchStartButton");
+		final Button stopwatchStopButton = (Button) fxer.getAt("#stopwatchStopButton");
+		final Label stopwatchTimeLabel = (Label) fxer.getAt("#stopwatchTimeLabel");
 
 		// Stoppuhr starten
 		when(getController().getGuiHelper().getFacade().startStopwatch()).thenReturn(new TimeDescriptor(50));
 		stopwatchStartButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 
 		// Stoppuhr stoppen
 		stopwatchStopButton.fire();
-		FXTestUtils.awaitEvents();
+//		awaitEvents();
 
 		// gemessene Zeit muss angezeigt sein
-		assertEquals("00:00:00.050", stopwatchTimeLabel.getText());
+//		assertThat(stopwatchTimeLabel, hasText("00:00:00.050"));
+//		assertEquals("00:00:00.050", stopwatchTimeLabel.getText());
+		waitOrTimeout(new Condition() {
+			public boolean isSatisfied() {
+				return "00:00:00.050".equals(stopwatchTimeLabel.getText());
+			}
+		}, TIMEOUT);
 
 		// Stoppuhr wieder starten, um zweite (additive) Messung zu berücksichtigen
 		when(getController().getGuiHelper().getFacade().startStopwatch()).thenReturn(new TimeDescriptor(200));
 		stopwatchStartButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 
 		// Stoppuhr wieder stoppen
 		stopwatchStopButton.fire();
-		FXTestUtils.awaitEvents();
+		awaitEvents();
 
 		// gemessene Zeit muss angezeigt sein
 		assertEquals("00:00:00.200", stopwatchTimeLabel.getText());
@@ -174,15 +186,15 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 	 * Testet die Funktionalität der Zurücksetzen-Schaltfläche.
 	 */
 	@Test
-	public final void testStopwatchReset() {
-		final Button stopwatchStartButton = (Button) scene.lookup("#stopwatchStartButton");
-		final Button stopwatchStopButton = (Button) scene.lookup("#stopwatchStopButton");
-		final Button stopwatchResetButton = (Button) scene.lookup("#stopwatchResetButton");
-		final Label stopwatchTimeLabel = (Label) scene.lookup("#stopwatchTimeLabel");
+	public final void testStopwatchReset() throws InterruptedException, TimeoutException {
+		final Button stopwatchStartButton = (Button) fxer.getAt("#stopwatchStartButton");
+		final Button stopwatchStopButton = (Button) fxer.getAt("#stopwatchStopButton");
+		final Button stopwatchResetButton = (Button) fxer.getAt("#stopwatchResetButton");
+		final Label stopwatchTimeLabel = (Label) fxer.getAt("#stopwatchTimeLabel");
 
 		// Stoppuhr zurücksetzen, ohne sie vorher gestartet zu haben
 		stopwatchResetButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).resetStopwatch();
 
 		// angezeigte Zeit muss zurückgesetzt sein
@@ -191,18 +203,18 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 		// Stoppuhr starten
 		when(getController().getGuiHelper().getFacade().startStopwatch()).thenReturn(new TimeDescriptor(9876));
 		stopwatchStartButton.fire();
-		FXTestUtils.awaitEvents();
+		awaitEvents();
 
 		// gemessene Zeit muss angezeigt sein
 		assertEquals("00:00:09.876", stopwatchTimeLabel.getText());
 
 		// Stoppuhr stoppen
 		stopwatchStopButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 
 		// Stoppuhr zurücksetzen
 		stopwatchResetButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 
 		// angezeigte Zeit muss zurückgesetzt sein
 		assertEquals("00:00:00.000", stopwatchTimeLabel.getText());
@@ -213,20 +225,20 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 	 */
 	@Test
 	public final void testStopwatchResetWhileRunning() {
-		final Button stopwatchStartButton = (Button) scene.lookup("#stopwatchStartButton");
-		final Button stopwatchStopButton = (Button) scene.lookup("#stopwatchStopButton");
-		final Button stopwatchResetButton = (Button) scene.lookup("#stopwatchResetButton");
-		final Label stopwatchTimeLabel = (Label) scene.lookup("#stopwatchTimeLabel");
+		final Button stopwatchStartButton = (Button) fxer.getAt("#stopwatchStartButton");
+		final Button stopwatchStopButton = (Button) fxer.getAt("#stopwatchStopButton");
+		final Button stopwatchResetButton = (Button) fxer.getAt("#stopwatchResetButton");
+		final Label stopwatchTimeLabel = (Label) fxer.getAt("#stopwatchTimeLabel");
 
 		// Stoppuhr starten
 		when(getController().getGuiHelper().getFacade().startStopwatch()).thenReturn(new TimeDescriptor(50));
 		stopwatchStartButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).startStopwatch();
 
 		// Stoppuhr zurücksetzen
 		stopwatchResetButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).resetStopwatch();
 
 		// gemessene Zeit muss angezeigt sein
@@ -234,7 +246,7 @@ public class StopwatchControllerTest extends FxmlGuiControllerTest {
 
 		// Stoppuhr stoppen
 		stopwatchStopButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 		verify(getController().getGuiHelper().getFacade()).stopStopwatch();
 	}
 

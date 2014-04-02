@@ -64,5 +64,5 @@ können.
 * CGlib
 * AspectJWeaver
 * JUnit
-* TestFX
+* Automaton
 * Mockito

@@ -9,14 +9,14 @@ import static org.junit.Assert.assertTrue;
 import java.util.Calendar;
 
 import javafx.collections.ObservableList;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableView;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.loadui.testfx.utils.FXTestUtils;
+
+import com.athaydes.automaton.FXer;
 
 /**
  * GUI-Tests für die Alarm-Funktionalität.
@@ -29,9 +29,9 @@ import org.loadui.testfx.utils.FXTestUtils;
 public class AlarmControllerTest extends FxmlGuiControllerTest {
 
 	/**
-	 * Container für Elemente.
+	 * Test-Client.
 	 */
-	private Scene scene;
+	private FXer fxer;
 
 	/**
 	 * {@inheritDoc}
@@ -42,10 +42,10 @@ public class AlarmControllerTest extends FxmlGuiControllerTest {
 
 	@Before
 	public final void setUp() {
-		scene = stage.getScene();
+		fxer = getClient();
 
 		// Tabelle leeren
-		final TableView<Alarm> alarmTable = (TableView<Alarm>) scene.lookup("#alarmTable");
+		final TableView<Alarm> alarmTable = (TableView<Alarm>) fxer.getAt("#alarmTable");
 		alarmTable.getItems().clear();
 	}
 
@@ -54,7 +54,7 @@ public class AlarmControllerTest extends FxmlGuiControllerTest {
 	 */
 	@Test
 	public final void testDeleteAlarm() {
-		final TableView<Alarm> alarmTable = (TableView<Alarm>) scene.lookup("#alarmTable");
+		final TableView<Alarm> alarmTable = (TableView<Alarm>) fxer.getAt("#alarmTable");
 
 		// zwei Alarme anlegen
 		final ObservableList<Alarm> tableData = alarmTable.getItems();
@@ -63,7 +63,7 @@ public class AlarmControllerTest extends FxmlGuiControllerTest {
 		tableData.add(alarm1);
 		tableData.add(alarm2);
 
-		final Button alarmDeleteButton = (Button) scene.lookup("#alarmDeleteButton");
+		final Button alarmDeleteButton = (Button) fxer.getAt("#alarmDeleteButton");
 
 		// Zustand der Schaltflächen testen
 		assertTrue(alarmDeleteButton.isVisible());
@@ -78,7 +78,7 @@ public class AlarmControllerTest extends FxmlGuiControllerTest {
 
 		// Alarm löschen
 		alarmDeleteButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 
 		// sicherstellen, dass zweiter Alarm gelöscht ist, erster aber nicht
 		assertTrue(tableData.contains(alarm1));
@@ -96,7 +96,7 @@ public class AlarmControllerTest extends FxmlGuiControllerTest {
 
 		// Alarm löschen
 		alarmDeleteButton.fire();
-		FXTestUtils.awaitEvents();
+		fxer.waitForFxEvents();
 
 		// sicherstellen, dass keine Alarme mehr existieren
 		assertTrue(tableData.isEmpty());
@@ -111,7 +111,7 @@ public class AlarmControllerTest extends FxmlGuiControllerTest {
 	 */
 	@Test
 	public final void testAlarmTableRendering() {
-		final TableView<Alarm> alarmTable = (TableView<Alarm>) scene.lookup("#alarmTable");
+		final TableView<Alarm> alarmTable = (TableView<Alarm>) fxer.getAt("#alarmTable");
 
 		// Alarm anlegen
 		final ObservableList<Alarm> tableData = alarmTable.getItems();

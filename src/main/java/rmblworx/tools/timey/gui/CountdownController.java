@@ -57,6 +57,11 @@ public class CountdownController extends Controller implements TimeyEventListene
 	private TimePicker countdownTimePicker;
 
 	/**
+	 * Ob der Controller als EventListener registriert wurde.
+	 */
+	private boolean registeredAsEventListener = false;
+
+	/**
 	 * Ob der Countdown läuft.
 	 */
 	private boolean countdownRunning = false;
@@ -81,13 +86,6 @@ public class CountdownController extends Controller implements TimeyEventListene
 		countdownTimePicker.getTimeProperty().addListener(new ChangeListener<Calendar>() {
 			public void changed(final ObservableValue<? extends Calendar> property, final Calendar oldValue, final Calendar newValue) {
 				countdownStartButton.setDisable(newValue.getTimeInMillis() == 0L);
-			}
-		});
-
-		final TimeyEventListener eventListener = this;
-		Platform.runLater(new Runnable() {
-			public void run() {
-				getGuiHelper().getFacade().addEventListener(eventListener);
 			}
 		});
 
@@ -124,6 +122,8 @@ public class CountdownController extends Controller implements TimeyEventListene
 		if (countdownRunning) {
 			return;
 		}
+
+		registerAsEventListenerOnce();
 
 		final long millis = countdownTimePicker.getTime().getTimeInMillis();
 
@@ -241,6 +241,21 @@ public class CountdownController extends Controller implements TimeyEventListene
 				countdownTimeLabel.setText(timeFormatter.format(countdownTimePicker.getTime().getTime()));
 			}
 		});
+	}
+
+	/**
+	 * Registriert den Controller einmalig als EventListener.
+	 */
+	private void registerAsEventListenerOnce() {
+		if (!registeredAsEventListener) {
+			registeredAsEventListener = true;
+			final TimeyEventListener eventListener = this;
+			Platform.runLater(new Runnable() {
+				public void run() {
+					getGuiHelper().getFacade().addEventListener(eventListener);
+				}
+			});
+		}
 	}
 
 	/**

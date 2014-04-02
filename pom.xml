@@ -23,7 +23,7 @@
 		<apache.commons.lang.version>2.6</apache.commons.lang.version>
 		<cglib.version>3.1</cglib.version>
 		<aspectjweaver.version>1.7.4</aspectjweaver.version>
-		<testfx.version>3.1.2</testfx.version>
+		<tempus-fugit.version>1.1</tempus-fugit.version>
 		<hibernate.core.version>3.6.10.Final</hibernate.core.version>
 		<h2.version>1.3.175</h2.version>
 		<commons-dbcp.version>1.4</commons-dbcp.version>
@@ -126,16 +126,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.loadui</groupId>
-			<artifactId>testFx</artifactId>
-			<version>${testfx.version}</version>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
+			<groupId>com.google.code.tempus-fugit</groupId>
+			<artifactId>tempus-fugit</artifactId>
+			<version>${tempus-fugit.version}</version>
 			<scope>test</scope>
-			<version>${mockito.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -151,6 +151,25 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+		<!-- Automaton erst dann als Abhängigkeit deklarieren, wenn es verfügbar ist. -->
+		<profile>
+			<id>automaton-available</id>
+			<activation>
+				<file>
+					<!-- Variable ${project.build.directory} kann hier dummerweise nicht genutzt werden. -->
+					<exists>target/tmp/automaton/Automaton-1.0.0-all-deps.jar</exists>
+				</file>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>com.athaydes</groupId>
+					<artifactId>automaton</artifactId>
+					<version>1.0.0</version>
+					<scope>system</scope>
+					<systemPath>${project.build.directory}/tmp/automaton/Automaton-1.0.0-all-deps.jar</systemPath>
+				</dependency>
+			</dependencies>
 		</profile>
 	</profiles>
 
@@ -359,6 +378,28 @@
 									<!-- Request elevated permissions -->
 									<fx:permissions elevated="true" />
 								</fx:deploy>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Automaton herunterladen und entpacken. -->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>prepare-automaton</id>
+						<phase>validate</phase>
+						<configuration>
+							<target xmlns:fx="javafx:com.sun.javafx.tools.ant">
+								<mkdir dir="${project.build.directory}/tmp/automaton/" />
+								<get src="https://github.com/renatoathaydes/Automaton/archive/1.0-RELEASE.zip" dest="${project.build.directory}/tmp/Automaton-1.0-RELEASE.zip" />
+								<unzip src="${project.build.directory}/tmp/Automaton-1.0-RELEASE.zip" dest="${project.build.directory}/tmp/automaton/" />
+								<unzip src="${project.build.directory}/tmp/automaton/Automaton-1.0-RELEASE/releases/1.0-RELEASE/Automaton-1.0.0-all-deps.zip" dest="${project.build.directory}/tmp/automaton/" />
 							</target>
 						</configuration>
 						<goals>

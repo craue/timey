@@ -1,27 +1,29 @@
 package rmblworx.tools.timey.gui.component;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.awt.event.KeyEvent;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Vector;
 
+import javafx.application.Platform;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyCode;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.loadui.testfx.GuiTest;
 
 import rmblworx.tools.timey.gui.DateTimeUtil;
+import rmblworx.tools.timey.gui.GuiTest;
 import rmblworx.tools.timey.gui.TimeyGuiTest;
 
-import com.google.common.base.Predicate;
+import com.athaydes.automaton.FXer;
 
 /**
  * GUI-Tests für die TimePicker-Komponente.
@@ -34,9 +36,9 @@ import com.google.common.base.Predicate;
 public class TimePickerTest extends GuiTest {
 
 	/**
-	 * Container für Elemente.
+	 * Test-Client.
 	 */
-	private Scene scene;
+	private FXer fxer;
 
 	/**
 	 * @return Elternknoten der GUI-Elemente
@@ -47,7 +49,7 @@ public class TimePickerTest extends GuiTest {
 
 	@Before
 	public final void setUp() {
-		scene = stage.getScene();
+		fxer = getClient();
 	}
 
 	/**
@@ -55,17 +57,17 @@ public class TimePickerTest extends GuiTest {
 	 */
 	@Test
 	public final void testInitialState() {
-		final TextField hoursTextField = (TextField) scene.lookup("#hoursTextField");
-		final TextField minutesTextField = (TextField) scene.lookup("#minutesTextField");
-		final TextField secondsTextField = (TextField) scene.lookup("#secondsTextField");
+		final TextField hoursTextField = (TextField) fxer.getAt("#hoursTextField");
+		final TextField minutesTextField = (TextField) fxer.getAt("#minutesTextField");
+		final TextField secondsTextField = (TextField) fxer.getAt("#secondsTextField");
 
 		assertEquals("00", hoursTextField.getText());
 		assertEquals("00", minutesTextField.getText());
 		assertEquals("00", secondsTextField.getText());
 
-		final Slider hoursSlider = (Slider) scene.lookup("#hoursSlider");
-		final Slider minutesSlider = (Slider) scene.lookup("#minutesSlider");
-		final Slider secondsSlider = (Slider) scene.lookup("#secondsSlider");
+		final Slider hoursSlider = (Slider) fxer.getAt("#hoursSlider");
+		final Slider minutesSlider = (Slider) fxer.getAt("#minutesSlider");
+		final Slider secondsSlider = (Slider) fxer.getAt("#secondsSlider");
 
 		assertEquals(0L, (long) hoursSlider.getValue());
 		assertEquals(0L, (long) minutesSlider.getValue());
@@ -76,14 +78,14 @@ public class TimePickerTest extends GuiTest {
 	 * Testet die bidirektionale Verbindung zwischen Textfeldern und Slidern.
 	 */
 	@Test
-	public final void testBidirectionalBoundingOfTextFieldsAndSliders() {
-		final TextField hoursTextField = (TextField) scene.lookup("#hoursTextField");
-		final TextField minutesTextField = (TextField) scene.lookup("#minutesTextField");
-		final TextField secondsTextField = (TextField) scene.lookup("#secondsTextField");
+	public final void testBidirectionalBoundingOfTextFieldsAndSliders() throws InterruptedException {
+		final TextField hoursTextField = (TextField) fxer.getAt("#hoursTextField");
+		final TextField minutesTextField = (TextField) fxer.getAt("#minutesTextField");
+		final TextField secondsTextField = (TextField) fxer.getAt("#secondsTextField");
 
-		final Slider hoursSlider = (Slider) scene.lookup("#hoursSlider");
-		final Slider minutesSlider = (Slider) scene.lookup("#minutesSlider");
-		final Slider secondsSlider = (Slider) scene.lookup("#secondsSlider");
+		final Slider hoursSlider = (Slider) fxer.getAt("#hoursSlider");
+		final Slider minutesSlider = (Slider) fxer.getAt("#minutesSlider");
+		final Slider secondsSlider = (Slider) fxer.getAt("#secondsSlider");
 
 		final List<TextFieldAndSliderValue> testCases = new Vector<TextFieldAndSliderValue>();
 		testCases.add(new TextFieldAndSliderValue(hoursSlider, 1, hoursTextField, "01"));
@@ -98,31 +100,37 @@ public class TimePickerTest extends GuiTest {
 		// Wert des Sliders setzen und sicherstellen, dass Textfeld-Inhalt der Erwartung entspricht
 		for (final TextFieldAndSliderValue testCase : testCases) {
 			testCase.slider.setValue(testCase.sliderValue);
-			try {
-				waitUntil(testCase.textField, new Predicate<TextField>() {
-					public boolean apply(final TextField textField) {
-						return testCase.textFieldValue.equals(textField.getText());
-					}
-				}, 1);
-			} catch (final RuntimeException e) {
-				fail(String.format("test case %d: '%s' doesn't match expected '%s'.", testCases.indexOf(testCase),
-						testCase.textField.getText(), testCase.textFieldValue));
-			}
+			awaitEvents();
+			assertEquals(String.format("test case %d: '%s' doesn't match expected '%s'.", testCases.indexOf(testCase),
+					testCase.textField.getText(), testCase.textFieldValue), testCase.textFieldValue, testCase.textField.getText());
+//			try {
+//				waitOrTimeout(new Condition() {
+//					public boolean isSatisfied() {
+//						return testCase.textFieldValue.equals(testCase.textField.getText());
+//					}
+//				}, TIMEOUT);
+//			} catch (final TimeoutException e) {
+//				fail(String.format("test case %d: '%s' doesn't match expected '%s'.", testCases.indexOf(testCase),
+//						testCase.textField.getText(), testCase.textFieldValue));
+//			}
 		}
 
 		// Inhalt des Textfelds setzen und sicherstellen, dass Slider-Wert der Erwartung entspricht
 		for (final TextFieldAndSliderValue testCase : testCases) {
 			testCase.textField.setText(testCase.textFieldValue);
-			try {
-				waitUntil(testCase.slider, new Predicate<Slider>() {
-					public boolean apply(final Slider slider) {
-						return testCase.slider.getValue() == testCase.sliderValue;
-					}
-				}, 1);
-			} catch (final RuntimeException e) {
-				fail(String.format("test case %d: '%.0f' doesn't match expected '%s'.", testCases.indexOf(testCase),
-						testCase.slider.getValue(), testCase.sliderValue));
-			}
+			awaitEvents();
+			assertEquals(String.format("test case %d: '%.0f' doesn't match expected '%s'.", testCases.indexOf(testCase),
+					testCase.slider.getValue(), testCase.sliderValue), testCase.sliderValue, testCase.slider.getValue(), 0L);
+//			try {
+//				waitOrTimeout(new Condition() {
+//					public boolean isSatisfied() {
+//						return testCase.sliderValue == testCase.slider.getValue();
+//					}
+//				}, TIMEOUT);
+//			} catch (final TimeoutException e) {
+//				fail(String.format("test case %d: '%.0f' doesn't match expected '%s'.", testCases.indexOf(testCase),
+//						testCase.slider.getValue(), testCase.sliderValue));
+//			}
 		}
 	}
 
@@ -130,10 +138,10 @@ public class TimePickerTest extends GuiTest {
 	 * Testet das Verhalten der Textfelder bei Eingabe ungültiger Werte.
 	 */
 	@Test
-	public final void testTextFieldsInvalidInput() {
-		final TextField hoursTextField = (TextField) scene.lookup("#hoursTextField");
-		final TextField minutesTextField = (TextField) scene.lookup("#minutesTextField");
-		final TextField secondsTextField = (TextField) scene.lookup("#secondsTextField");
+	public final void testTextFieldsInvalidInput() throws InterruptedException {
+		final TextField hoursTextField = (TextField) fxer.getAt("#hoursTextField");
+		final TextField minutesTextField = (TextField) fxer.getAt("#minutesTextField");
+		final TextField secondsTextField = (TextField) fxer.getAt("#secondsTextField");
 
 		final List<TextFieldInputAndValue> testCases = new Vector<TextFieldInputAndValue>();
 		// zu kurze Eingabe
@@ -156,17 +164,14 @@ public class TimePickerTest extends GuiTest {
 		testCases.add(new TextFieldInputAndValue(minutesTextField, "x", "00", true));
 		testCases.add(new TextFieldInputAndValue(secondsTextField, "x", "00", true));
 
-		final List<InputMode> inputModes = new Vector<InputMode>();
-		inputModes.add(InputMode.TYPE);
-		inputModes.add(InputMode.COPY_PASTE);
-
-		for (final InputMode inputMode : inputModes) {
+		for (final InputMode inputMode : new InputMode[] { InputMode.TYPE, InputMode.COPY_PASTE }) {
 			// Inhalt des Textfelds setzen und sicherstellen, dass Inhalt der Erwartung entspricht
 			for (final TextFieldInputAndValue testCase : testCases) {
 				testCase.textField.requestFocus(); // Feld fokussieren
+				assertTrue(testCase.textField.isFocused());
 				switch (inputMode) {
 					case TYPE:
-						type(testCase.input);
+						fxer.type(testCase.input);
 						break;
 					case COPY_PASTE:
 						testCase.textField.setText(testCase.input);
@@ -174,22 +179,28 @@ public class TimePickerTest extends GuiTest {
 					default:
 						fail("unbekannter Modus");
 				}
+				fxer.waitForFxEvents();
 				if (testCase.loseFocusAfterwards) {
-					type(KeyCode.TAB); // Feld muss Fokus wieder verlieren
+					fxer.type(KeyEvent.VK_TAB); // Feld muss Fokus wieder verlieren
+					awaitEvents();
+					assertFalse(testCase.textField.isFocused());
 				}
-				try {
-					waitUntil(testCase.textField, new Predicate<TextField>() {
-						public boolean apply(final TextField textField) {
-							return testCase.value.equals(textField.getText());
-						}
-					}, 1);
-				} catch (final RuntimeException e) {
-					fail(String.format("test case %d [%s]: '%s' doesn't match expected '%s'.", testCases.indexOf(testCase),
-							inputMode.toString().toLowerCase(), testCase.textField.getText(), testCase.value));
-				} finally {
+//				try {
+					assertEquals(String.format("test case %d [%s]: '%s' doesn't match expected '%s'.", testCases.indexOf(testCase),
+							inputMode.toString().toLowerCase(), testCase.textField.getText(), testCase.value), testCase.value,
+							testCase.textField.getText());
+//					waitOrTimeout(new Condition() {
+//						public boolean isSatisfied() {
+//							return testCase.value.equals(testCase.textField.getText());
+//						}
+//					}, TIMEOUT);
+//				} catch (final TimeoutException e) {
+//					fail(String.format("test case %d [%s]: '%s' doesn't match expected '%s'.", testCases.indexOf(testCase),
+//							inputMode.toString().toLowerCase(), testCase.textField.getText(), testCase.value));
+//				} finally {
 					// Feldinhalt auf Ausgangswert zurücksetzen
 					testCase.textField.setText("00");
-				}
+//				}
 			}
 		}
 	}
@@ -199,11 +210,10 @@ public class TimePickerTest extends GuiTest {
 	 */
 	@Test
 	public final void testSetTime() {
-		final TextField hoursTextField = (TextField) scene.lookup("#hoursTextField");
-		final TextField minutesTextField = (TextField) scene.lookup("#minutesTextField");
-		final TextField secondsTextField = (TextField) scene.lookup("#secondsTextField");
-
-		final TimePicker timePicker = (TimePicker) scene.getRoot();
+		final TextField hoursTextField = (TextField) fxer.getAt("#hoursTextField");
+		final TextField minutesTextField = (TextField) fxer.getAt("#minutesTextField");
+		final TextField secondsTextField = (TextField) fxer.getAt("#secondsTextField");
+		final TimePicker timePicker = (TimePicker) fxer.getRoot();
 
 		final List<TimePartsAndTimeValue> testCases = new Vector<TimePartsAndTimeValue>();
 		testCases.add(new TimePartsAndTimeValue("23", "59", "59", "23:59:59"));
@@ -212,6 +222,7 @@ public class TimePickerTest extends GuiTest {
 		for (final TimePartsAndTimeValue testCase : testCases) {
 			final Calendar time = DateTimeUtil.getCalendarForString(testCase.timeString);
 			timePicker.setTime(time);
+			awaitEvents();
 			assertEquals(testCase.hours, hoursTextField.getText());
 			assertEquals(testCase.minutes, minutesTextField.getText());
 			assertEquals(testCase.seconds, secondsTextField.getText());
@@ -224,11 +235,10 @@ public class TimePickerTest extends GuiTest {
 	 */
 	@Test
 	public final void testGetTime() {
-		final TextField hoursTextField = (TextField) scene.lookup("#hoursTextField");
-		final TextField minutesTextField = (TextField) scene.lookup("#minutesTextField");
-		final TextField secondsTextField = (TextField) scene.lookup("#secondsTextField");
-
-		final TimePicker timePicker = (TimePicker) scene.getRoot();
+		final TextField hoursTextField = (TextField) fxer.getAt("#hoursTextField");
+		final TextField minutesTextField = (TextField) fxer.getAt("#minutesTextField");
+		final TextField secondsTextField = (TextField) fxer.getAt("#secondsTextField");
+		final TimePicker timePicker = (TimePicker) fxer.getRoot();
 
 		final List<TimePartsAndTimeValue> testCases = new Vector<TimePartsAndTimeValue>();
 		testCases.add(new TimePartsAndTimeValue("23", "59", "59", "23:59:59"));
