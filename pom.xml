@@ -152,6 +152,20 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>gui-tests</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration combine.self="override">
+							<groups>${timey.gui-test-marker.class}</groups>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 		<!-- Automaton erst dann als Abhängigkeit deklarieren, wenn es verfügbar ist. -->
 		<profile>
 			<id>automaton-available</id>
