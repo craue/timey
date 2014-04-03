@@ -185,6 +185,25 @@
 				</dependency>
 			</dependencies>
 		</profile>
+		<!-- ClasspathSuite erst dann als Abhängigkeit deklarieren, wenn es verfügbar ist. -->
+		<profile>
+			<id>classpath-suite-available</id>
+			<activation>
+				<file>
+					<!-- Variable ${project.build.directory} kann hier dummerweise nicht genutzt werden. -->
+					<exists>target/tmp/classpath-suite/cpsuite-1.2.6.jar</exists>
+				</file>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>net.johanneslink</groupId>
+					<artifactId>classpath-suite</artifactId>
+					<version>1.2.6</version>
+					<scope>system</scope>
+					<systemPath>${project.build.directory}/tmp/classpath-suite/cpsuite-1.2.6.jar</systemPath>
+				</dependency>
+			</dependencies>
+		</profile>
 	</profiles>
 
 	<build>
@@ -414,6 +433,26 @@
 								<get src="https://github.com/renatoathaydes/Automaton/archive/1.0-RELEASE.zip" dest="${project.build.directory}/tmp/Automaton-1.0-RELEASE.zip" />
 								<unzip src="${project.build.directory}/tmp/Automaton-1.0-RELEASE.zip" dest="${project.build.directory}/tmp/automaton/" />
 								<unzip src="${project.build.directory}/tmp/automaton/Automaton-1.0-RELEASE/releases/1.0-RELEASE/Automaton-1.0.0-all-deps.zip" dest="${project.build.directory}/tmp/automaton/" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- ClasspathSuite herunterladen und entpacken. -->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>prepare-classpath-suite</id>
+						<phase>validate</phase>
+						<configuration>
+							<target xmlns:fx="javafx:com.sun.javafx.tools.ant">
+								<mkdir dir="${project.build.directory}/tmp/classpath-suite/" />
+								<get src="http://www.johanneslink.net/downloads/cpsuite/cpsuite-1.2.6.jar" dest="${project.build.directory}/tmp/classpath-suite/" />
 							</target>
 						</configuration>
 						<goals>
